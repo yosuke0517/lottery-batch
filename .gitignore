@@ -1,0 +1,17 @@
+/.idea
+
+# env
+.env
+
+# local dbdata
+/dbdata
+
+# migration file
+/api/migrations
+
+/lottery_batch/migrations
+
+/lottery_batch_base/migrations
+
+# img
+/_media
