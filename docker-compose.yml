@@ -24,7 +24,7 @@ services:
     build: .
     command: ["./wait-for-it.sh", "db:5432", "--", "python", "manage.py", "runserver", "0.0.0.0:8888"]
     ports:
-      - "8888:8888"
+      - "4444:4444"
     environment:
       - AWS_ACCESS_KEY_LOTTERY=${AWS_ACCESS_KEY_LOTTERY}
       - AWS_SECRET_ACCESS_KEY_LOTTERY=${AWS_SECRET_ACCESS_KEY_LOTTERY}
