@@ -97,17 +97,17 @@ eksctl create cluster \
   - `RdsUserSecret`という名前で作成しているのでリンクを上記と同じように確認する
   
 - postgresクライアントにてアプリケーション用データベースユーザの作成
-  - `createuser -d -U eksdbadmin -P -h eks-work-db.cllz5clgd9hh.ca-central-1.rds.amazonaws.com mywork`
+  - `createuser -d -U eksdbadmin -P -h { RDSのエンドポイント } mywork`
   - `createuser -d -U {ルートユーザ名} -P -h {RDSエンドポイント} {作成するユーザ名}`
   - 最初の2回は`RdsUserSecret`のパスワード
   - 最後の1回は`RdsMasterSecret`のパスワード
   
 - データベースの作成
-  - `createdb -U mywork -h eks-work-db.cllz5clgd9hh.ca-central-1.rds.amazonaws.com -E UTF8 myworkdb`
+  - `createdb -U mywork -h { RDSのエンドポイント } -E UTF8 myworkdb`
   - パスワード入力を促されるので`RdsUserSecret`のパスワードを入力する
   
 - データベースへの接続とDDLの実行
-  - `psql -U mywork -h eks-work-db.cllz5clgd9hh.ca-central-1.rds.amazonaws.com myworkdb`
+  - `psql -U mywork -h { RDSのエンドポイント } myworkdb`
   
 - マイグレーション
   - TODO 1154~# lottery-batch
