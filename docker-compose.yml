@@ -22,7 +22,7 @@ services:
   web:
     container_name: lottery_batch
     build: .
-    command: ["./wait-for-it.sh", "db:5432", "--", "python", "manage.py", "runserver", "0.0.0.0:8888"]
+    command: ["./wait-for-it.sh", "db:5432", "--", "python", "manage.py", "runserver", "--settings", "lottery_batch_base.settings.local", "0.0.0.0:8888"]
     ports:
       - "4444:4444"
     environment:

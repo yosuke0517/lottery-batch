@@ -119,9 +119,9 @@ class LotoBackNumberSearch:
                                               'lottery_number'])
 
         # CSV出力
-        write_df_to_s3(mini_loto_df, 's3://takeuchi-lambda-test/mini_loto.csv')
-        write_df_to_s3(loto_six_df, 's3://takeuchi-lambda-test/loto_six.csv')
-        write_df_to_s3(loto_seven_df, 's3://takeuchi-lambda-test/loto_seven.csv')
+        write_df_to_s3(mini_loto_df, 's3://2021lottery-result/mini_loto.csv')
+        write_df_to_s3(loto_six_df, 's3://2021lottery-result/loto_six.csv')
+        write_df_to_s3(loto_seven_df, 's3://2021lottery-result/loto_seven.csv')
 
         # PostgreSQLに書き込む
         mini_loto_df.to_sql('lottery_api_miniloto', con=engine, if_exists='append', index=False)
