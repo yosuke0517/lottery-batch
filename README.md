@@ -109,5 +109,81 @@ eksctl create cluster \
 - データベースへの接続とDDLの実行
   - `psql -U mywork -h { RDSのエンドポイント } myworkdb`
   
-- マイグレーション
-  - TODO 1154~# lottery-batch
+# 本番環境
+- 一旦ec2で
+
+```
+//パッケージのアップデート
+$ sudo yum update
+
+//Python3インストール
+$ sudo yum install python3
+
+//バージョン確認
+$ python -V
+---------------------------------------------------------------------
+Python 2.7.x
+
+//コマンドのディレクトリへ移動
+$ cd /usr/bin/
+
+//Python 3のバージョン確認
+$ ls pyth*
+---------------------------------------------------------------------
+python   python2.7         python2-config  python3.7   python-config
+python2  python2.7-config  python3         python3.7m
+
+//現在のデフォルトリンク(Python 2系)を解除
+$ sudo unlink ./python
+
+//新たにデフォルトリンク(Python 3系)を設定
+$ sudo ln -s /usr/bin/python3.7 ./python
+
+//Python 3系がデフォルトになったことを確認
+$ python -V
+---------------------------------------------------------------------
+Python 3.7.x
+
+$ pip3 install selenium --user
+
+// yumの修正
+$ sudo vim /usr/bin/yum
+
+#!/usr/bin/python2 ←pythonになっているため2をつける
+
+$ sudo vim /usr/libexec/urlgrabber-ext-down
+
+#!/usr/bin/python2 ←同じく2にする
+
+// Google ChromeとChromeDriverのインストール
+$ sudo vi /etc/yum.repos.d/google-chrome.repo
+// ↓以下のように編集
+[google-chrome]
+name=google-chrome
+baseurl=http://dl.google.com/linux/chrome/rpm/stable/$basearch
+enabled=0
+gpgcheck=1
+gpgkey=https://dl-ssl.google.com/linux/linux_signing_key.pub
+
+//Chromeのインストール
+$ sudo yum install --enablerepo=google-chrome google-chrome-stable
+
+//バージョン確認
+$ google-chrome --version
+---------------------------------------------------------------------
+Google Chrome 86.0.4240.111
+
+// chrome driverをダウンロード（現在の安定版は87
+$ wget https://chromedriver.storage.googleapis.com/87.0.4280.88/chromedriver_linux64.zip
+
+//ユーザディレクトリに上がったzipを解凍
+sudo unzip /home/ec2-user/chromedriver_linux64.zip
+
+//PATHの通ったディレクトリへ移動
+sudo mv /home/ec2-user/chromedriver /usr/local/bin/
+
+// 日本語フォントのインストール
+sudo yum install ipa-pgothic-fonts.noarch
+```
+
+- pip install で必要なものをインストール
