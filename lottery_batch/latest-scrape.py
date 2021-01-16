@@ -9,6 +9,10 @@ import re
 from datetime import datetime as dt
 import pandas as pd
 from sqlalchemy import create_engine
+import environ
+
+env = environ.Env()
+env.read_env('.env')
 
 
 class LotoBackNumberSearch:
@@ -93,8 +97,6 @@ class LotoBackNumberSearch:
         browser.quit()
 
         lotos_info
-        # データベースの接続情報
-        # engine = create_engine('postgresql://ユーザー名:パスワード@ホスト:ポート/DB名')
 
         # 直近１年分以外を書き込み
         mini_loto_base = lotos_info[2]
@@ -147,7 +149,10 @@ if __name__ == "__main__":
     loto_seven_bk.write_df_to_s3(loto_seven_df, 's3://2021lottery-result/loto_seven.csv')
 
     # PostgreSQLに書き込む
-    engine = create_engine('postgresql://lottery:lottery@lotterydb:5432/lotterydb')
+    # データベースの接続情報
+    # engine = create_engine('postgresql://ユーザー名:パスワード@ホスト:ポート/DB名')
+    engine_str = 'postgresql://' + env('USER_NAME') + ':' + env('PASSWORD') + '@' + env('HOST') + ':5432/' + env('DATABASE_NAME')
+    engine = create_engine(engine_str)
     mini_loto_df.to_sql('lottery_api_miniloto', con=engine, if_exists='append', index=False)
     loto_six_df.to_sql('lottery_api_lotosix', con=engine, if_exists='append', index=False)
     loto_seven_df.to_sql('lottery_api_lotoseven', con=engine, if_exists='append', index=False)
