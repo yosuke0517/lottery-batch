@@ -186,4 +186,4 @@ sudo mv /home/ec2-user/chromedriver /usr/local/bin/
 sudo yum install ipa-pgothic-fonts.noarch
 ```
 
-- pip install で必要なものをインストール
+- pip install で必要なものをインストール：[参考](https://tooaruki.com/system/8682/)
