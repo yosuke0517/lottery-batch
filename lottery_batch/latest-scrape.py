@@ -13,7 +13,7 @@ from sqlalchemy import create_engine
 
 class LotoBackNumberSearch:
 
-    def get_latest_1(self) -> dict:
+    def get_latest_1(self):
         options = webdriver.ChromeOptions()
         options.add_argument('--headless')
         options.add_argument('--no-sandbox')
@@ -95,7 +95,6 @@ class LotoBackNumberSearch:
         lotos_info
         # データベースの接続情報
         # engine = create_engine('postgresql://ユーザー名:パスワード@ホスト:ポート/DB名')
-        engine = create_engine('postgresql://lottery:lottery@lotterydb:5432/lotterydb')
 
         # 直近１年分以外を書き込み
         mini_loto_base = lotos_info[2]
@@ -118,15 +117,19 @@ class LotoBackNumberSearch:
                                               'number_5', 'number_6', 'number_7', 'bonus_number1', 'bonus_number2',
                                               'lottery_number'])
 
-        # CSV出力
-        write_df_to_s3(mini_loto_df, 's3://2021lottery-result/mini_loto.csv')
-        write_df_to_s3(loto_six_df, 's3://2021lottery-result/loto_six.csv')
-        write_df_to_s3(loto_seven_df, 's3://2021lottery-result/loto_seven.csv')
+        return mini_loto_df, loto_six_df, loto_seven_df
 
-        # PostgreSQLに書き込む
-        mini_loto_df.to_sql('lottery_api_miniloto', con=engine, if_exists='append', index=False)
-        loto_six_df.to_sql('lottery_api_lotosix', con=engine, if_exists='append', index=False)
-        loto_seven_df.to_sql('lottery_api_lotoseven', con=engine, if_exists='append', index=False)
+    def write_df_to_s3(self, df, outpath):
+        """
+        s3にファイルを書き出す処理
+        """
+        import s3fs
+        key = os.environ['AWS_ACCESS_KEY_LOTTERY']
+        secret = os.environ['AWS_SECRET_ACCESS_KEY_LOTTERY']
+        bytes_to_write = df.to_csv(None, index=False).encode()
+        fs = s3fs.S3FileSystem(key=key, secret=secret)
+        with fs.open(outpath, 'wb') as f:
+            f.write(bytes_to_write)
 
 
 if __name__ == "__main__":
@@ -136,17 +139,15 @@ if __name__ == "__main__":
     loto_seven_bk = LotoBackNumberSearch()
 
     # 直近1回の情報を取得
-    loto_seven_bk.get_latest_1()
+    mini_loto_df, loto_six_df, loto_seven_df = loto_seven_bk.get_latest_1()
 
+    # CSV出力
+    loto_seven_bk.write_df_to_s3(mini_loto_df, 's3://2021lottery-result/mini_loto.csv')
+    loto_seven_bk.write_df_to_s3(loto_six_df, 's3://2021lottery-result/loto_six.csv')
+    loto_seven_bk.write_df_to_s3(loto_seven_df, 's3://2021lottery-result/loto_seven.csv')
 
-def write_df_to_s3(df, outpath):
-    """
-    s3にファイルを書き出す処理
-    """
-    import s3fs
-    key = os.environ['AWS_ACCESS_KEY_LOTTERY']
-    secret = os.environ['AWS_SECRET_ACCESS_KEY_LOTTERY']
-    bytes_to_write = df.to_csv(None, index=False).encode()
-    fs = s3fs.S3FileSystem(key=key, secret=secret)
-    with fs.open(outpath, 'wb') as f:
-        f.write(bytes_to_write)
+    # PostgreSQLに書き込む
+    engine = create_engine('postgresql://lottery:lottery@lotterydb:5432/lotterydb')
+    mini_loto_df.to_sql('lottery_api_miniloto', con=engine, if_exists='append', index=False)
+    loto_six_df.to_sql('lottery_api_lotosix', con=engine, if_exists='append', index=False)
+    loto_seven_df.to_sql('lottery_api_lotoseven', con=engine, if_exists='append', index=False)
