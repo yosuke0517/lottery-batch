@@ -11,6 +11,11 @@ from datetime import datetime as dt
 import pprint
 import pandas as pd
 from sqlalchemy import create_engine
+import environ
+
+env = environ.Env()
+env.read_env('.env')
+
 
 def write_df_to_s3(df, outpath):
     """
@@ -319,7 +324,8 @@ if __name__ == "__main__":
 
         # データベースの接続情報
         # engine = create_engine('postgresql://ユーザー名:パスワード@ホスト:ポート/DB名')
-        engine = create_engine('postgresql://lottery:lottery@db:5432/lotterydb')
+        engine_str = 'postgresql://' + env('USER_NAME') + ':' + env('PASSWORD') + '@' + env('HOST') + ':5432/' + env('DATABASE_NAME')
+        engine = create_engine(engine_str)
 
         # 直近１年分以外を書き込み latest_4_infoだけ入ってる順番逆 TODO 直す
         mini_loto_all_base = back_number_within_1_year[0] + back_number_all[0] + latest_4_info[2]
@@ -342,10 +348,6 @@ if __name__ == "__main__":
                                                   'number_5', 'number_6', 'number_7', 'bonus_number1', 'bonus_number2',
                                                   'lottery_number'])
 
-        # CSV出力
-        # mini_loto_all_df.to_csv('./mini_loto_all.csv')
-        # loto_six_all_df.to_csv('./loto_six_all.csv')
-        # loto_seven_all_df.to_csv('./loto_seven_all.csv')
         # CSV出力
         write_df_to_s3(mini_loto_all_df, 's3://takeuchi-lambda-test/mini_loto_all.csv')
         write_df_to_s3(loto_six_all_df, 's3://takeuchi-lambda-test/loto_six_all.csv')
