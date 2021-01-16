@@ -349,9 +349,9 @@ if __name__ == "__main__":
                                                   'lottery_number'])
 
         # CSV出力
-        write_df_to_s3(mini_loto_all_df, 's3://takeuchi-lambda-test/mini_loto_all.csv')
-        write_df_to_s3(loto_six_all_df, 's3://takeuchi-lambda-test/loto_six_all.csv')
-        write_df_to_s3(loto_seven_all_df, 's3://takeuchi-lambda-test/loto_seven_all.csv')
+        write_df_to_s3(mini_loto_all_df, 's3://2021lottery-result/mini_loto_all.csv')
+        write_df_to_s3(loto_six_all_df, 's3://2021lottery-result/loto_six_all.csv')
+        write_df_to_s3(loto_seven_all_df, 's3://2021lottery-result/loto_seven_all.csv')
 
         # PostgreSQLに書き込む
         mini_loto_all_df.to_sql('lottery_api_miniloto', con=engine, if_exists='replace', index=False)
