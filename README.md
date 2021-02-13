@@ -187,3 +187,8 @@ sudo yum install ipa-pgothic-fonts.noarch
 ```
 
 - pip install で必要なものをインストール：[参考](https://tooaruki.com/system/8682/)
+
+### runserverやmigrate時の設定ファイルの渡し方
+  - `python3 manage.py migrate --settings lottery_batch_base.settings.production`
+    - 上記のように`--settings`オプションを渡して各環境の場所を指定する
+    - 上記ではlottery_backend/settings/production.pyの設定ファイルを読み込んでいる（base.pyは指定しなくて良い）

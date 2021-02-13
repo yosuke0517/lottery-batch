@@ -16,8 +16,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'lotterydb',
-        'USER': 'lottery',
-        'PASSWORD': 'lottery',
+        'USER': 'root',
+        'PASSWORD': 'passpass',
         'HOST': 'db',
         'PORT': 5432
     }
