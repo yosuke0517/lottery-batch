@@ -48,7 +48,7 @@ class LotoBackNumberSearch:
         latest_1_info = []
         # すべてのlatest情報をまとめる配列
         lotos_info = []
-        for link_element in found[0:3]:
+        for link_element in found[0:1]:
             print(link_element.find('a').text)
             link = link_element.find('a')['href']
             browser.get(base_url + link)
@@ -97,29 +97,17 @@ class LotoBackNumberSearch:
         browser.quit()
 
         lotos_info
-
+        print(lotos_info)
         # 直近１年分以外を書き込み
-        mini_loto_base = lotos_info[2]
-        loto_six_base = lotos_info[1]
         loto_seven_base = lotos_info[0]
 
-        mini_loto_df = pd.DataFrame(mini_loto_base,
-                                    columns=['id', 'lottery_date', 'times', 'number_1', 'number_2', 'number_3',
-                                             'number_4',
-                                             'number_5',
-                                             'bonus_number1', 'lottery_number'])
-        loto_six_df = pd.DataFrame(loto_six_base,
-                                   columns=['id', 'lottery_date', 'times', 'number_1', 'number_2', 'number_3',
-                                            'number_4',
-                                            'number_5',
-                                            'number_6', 'bonus_number1', 'lottery_number'])
         loto_seven_df = pd.DataFrame(loto_seven_base,
                                      columns=['id', 'lottery_date', 'times', 'number_1', 'number_2', 'number_3',
                                               'number_4',
                                               'number_5', 'number_6', 'number_7', 'bonus_number1', 'bonus_number2',
                                               'lottery_number'])
 
-        return mini_loto_df, loto_six_df, loto_seven_df
+        return loto_seven_df
 
     def write_df_to_s3(self, df, outpath):
         """
@@ -141,11 +129,9 @@ if __name__ == "__main__":
     loto_seven_bk = LotoBackNumberSearch()
 
     # 直近1回の情報を取得
-    mini_loto_df, loto_six_df, loto_seven_df = loto_seven_bk.get_latest_1()
+    loto_seven_df = loto_seven_bk.get_latest_1()
 
     # CSV出力
-    loto_seven_bk.write_df_to_s3(mini_loto_df, 's3://2021lottery-result/mini_loto.csv')
-    loto_seven_bk.write_df_to_s3(loto_six_df, 's3://2021lottery-result/loto_six.csv')
     loto_seven_bk.write_df_to_s3(loto_seven_df, 's3://2021lottery-result/loto_seven.csv')
 
     # PostgreSQLに書き込む
@@ -153,6 +139,4 @@ if __name__ == "__main__":
     # engine = create_engine('postgresql://ユーザー名:パスワード@ホスト:ポート/DB名')
     engine_str = 'postgresql://' + env('USER_NAME') + ':' + env('PASSWORD') + '@' + env('HOST') + ':5432/' + env('DATABASE_NAME')
     engine = create_engine(engine_str)
-    mini_loto_df.to_sql('lottery_api_miniloto', con=engine, if_exists='append', index=False)
-    loto_six_df.to_sql('lottery_api_lotosix', con=engine, if_exists='append', index=False)
     loto_seven_df.to_sql('lottery_api_lotoseven', con=engine, if_exists='append', index=False)
