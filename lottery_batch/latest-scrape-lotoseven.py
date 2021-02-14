@@ -10,6 +10,7 @@ from datetime import datetime as dt
 import pandas as pd
 from sqlalchemy import create_engine
 import environ
+import requests
 
 env = environ.Env()
 env.read_env('.env')
@@ -121,6 +122,16 @@ class LotoBackNumberSearch:
         with fs.open(outpath, 'wb') as f:
             f.write(bytes_to_write)
 
+    def send_line_notify(self, notification_message):
+        """
+        LINEに通知する
+        """
+        line_notify_token = os.environ['LINE_TOKEN']
+        line_notify_api = 'https://notify-api.line.me/api/notify'
+        headers = {'Authorization': f'Bearer {line_notify_token}'}
+        data = {'message': f'本日の結果: {notification_message}'}
+        requests.post(line_notify_api, headers=headers, data=data)
+
 
 if __name__ == "__main__":
     """
@@ -137,6 +148,9 @@ if __name__ == "__main__":
     # PostgreSQLに書き込む
     # データベースの接続情報
     # engine = create_engine('postgresql://ユーザー名:パスワード@ホスト:ポート/DB名')
-    engine_str = 'postgresql://' + env('USER_NAME') + ':' + env('PASSWORD') + '@' + env('HOST') + ':5432/' + env('DATABASE_NAME')
+    engine_str = 'postgresql://' + env('USER_NAME') + ':' + env('PASSWORD') + '@' + env('HOST') + ':5432/' + env(
+        'DATABASE_NAME')
     engine = create_engine(engine_str)
     loto_seven_df.to_sql('lottery_api_lotoseven', con=engine, if_exists='append', index=False)
+
+    loto_seven_bk.send_line_notify(loto_seven_df)
