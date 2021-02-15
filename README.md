@@ -192,3 +192,19 @@ sudo yum install ipa-pgothic-fonts.noarch
   - `python3 manage.py migrate --settings lottery_batch_base.settings.production`
     - 上記のように`--settings`オプションを渡して各環境の場所を指定する
     - 上記ではlottery_backend/settings/production.pyの設定ファイルを読み込んでいる（base.pyは指定しなくて良い）
+    
+    
+# 最新の1件取得をcronで定期実行
+- `crontab -e`にてタブを開く
+```
+AWS_ACCESS_KEY_LOTTERY=XXXXX
+AWS_SECRET_ACCESS_KEY_LOTTERY=YYYYY
+LINE_TOKEN=ZZZZZ
+
+0 20 * * 1,2 python -m lottery-batch/lottery_batch/latest_scrape_miniloto.py > c
+ron-miniloto.log 2>&1
+0 20 * * 1,4 python -m lottery-batch/lottery_batch/latest_scrape_lotosix.py > cr
+on-lotosix.log 2>&1
+0 20 * * 1,5 python -m lottery-batch/lottery_batch/latest_scrape_lotoseven.py > 
+cron-lotoseven.log 2>&1
+```

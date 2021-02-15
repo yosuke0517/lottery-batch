@@ -10,7 +10,8 @@ from datetime import datetime as dt
 import pandas as pd
 from sqlalchemy import create_engine
 import environ
-import requests
+from .common import write_df_to_s3
+from .common import send_line_notify
 
 env = environ.Env()
 env.read_env('.env')
@@ -49,7 +50,7 @@ class LotoBackNumberSearch:
         latest_1_info = []
         # すべてのlatest情報をまとめる配列
         lotos_info = []
-        for link_element in found[0:1]:
+        for link_element in found[2:3]:
             print(link_element.find('a').text)
             link = link_element.find('a')['href']
             browser.get(base_url + link)
@@ -98,39 +99,17 @@ class LotoBackNumberSearch:
         browser.quit()
 
         lotos_info
-        print(lotos_info)
+
         # 直近１年分以外を書き込み
-        loto_seven_base = lotos_info[0]
+        mini_loto_base = lotos_info[0]
 
-        loto_seven_df = pd.DataFrame(loto_seven_base,
-                                     columns=['id', 'lottery_date', 'times', 'number_1', 'number_2', 'number_3',
-                                              'number_4',
-                                              'number_5', 'number_6', 'number_7', 'bonus_number1', 'bonus_number2',
-                                              'lottery_number'])
+        mini_loto_df = pd.DataFrame(mini_loto_base,
+                                    columns=['id', 'lottery_date', 'times', 'number_1', 'number_2', 'number_3',
+                                             'number_4',
+                                             'number_5',
+                                             'bonus_number1', 'lottery_number'])
 
-        return loto_seven_df
-
-    def write_df_to_s3(self, df, outpath):
-        """
-        s3にファイルを書き出す処理
-        """
-        import s3fs
-        key = os.environ['AWS_ACCESS_KEY_LOTTERY']
-        secret = os.environ['AWS_SECRET_ACCESS_KEY_LOTTERY']
-        bytes_to_write = df.to_csv(None, index=False).encode()
-        fs = s3fs.S3FileSystem(key=key, secret=secret)
-        with fs.open(outpath, 'wb') as f:
-            f.write(bytes_to_write)
-
-    def send_line_notify(self, notification_message):
-        """
-        LINEに通知する
-        """
-        line_notify_token = os.environ['LINE_TOKEN']
-        line_notify_api = 'https://notify-api.line.me/api/notify'
-        headers = {'Authorization': f'Bearer {line_notify_token}'}
-        data = {'message': f'本日の結果: {notification_message}'}
-        requests.post(line_notify_api, headers=headers, data=data)
+        return mini_loto_df
 
 
 if __name__ == "__main__":
@@ -140,17 +119,16 @@ if __name__ == "__main__":
     loto_seven_bk = LotoBackNumberSearch()
 
     # 直近1回の情報を取得
-    loto_seven_df = loto_seven_bk.get_latest_1()
+    mini_loto_df = loto_seven_bk.get_latest_1()
 
     # CSV出力
-    loto_seven_bk.write_df_to_s3(loto_seven_df, 's3://2021lottery-result/loto_seven.csv')
+    write_df_to_s3(mini_loto_df, 's3://2021lottery-result/mini_loto.csv')
 
     # PostgreSQLに書き込む
     # データベースの接続情報
     # engine = create_engine('postgresql://ユーザー名:パスワード@ホスト:ポート/DB名')
-    engine_str = 'postgresql://' + env('USER_NAME') + ':' + env('PASSWORD') + '@' + env('HOST') + ':5432/' + env(
-        'DATABASE_NAME')
+    engine_str = 'postgresql://' + env('USER_NAME') + ':' + env('PASSWORD') + '@' + env('HOST') + ':5432/' + env('DATABASE_NAME')
     engine = create_engine(engine_str)
-    loto_seven_df.to_sql('lottery_api_lotoseven', con=engine, if_exists='append', index=False)
+    mini_loto_df.to_sql('lottery_api_miniloto', con=engine, if_exists='append', index=False)
 
-    loto_seven_bk.send_line_notify(loto_seven_df)
+    send_line_notify(mini_loto_df)
